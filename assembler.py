@@ -33,7 +33,15 @@ labels = {}
 # Getting the stdin
 #
 # reading the file
-with open("stdin.txt", "r") as f:
+with open("input.txt", "r") as f:
+
+    """ 
+        Format of lines: List[List[string]]
+
+        For eg:-
+            for command:    "add R1 R2 R3"
+            lines is:       [["add", "R1", "R2", "R3]]
+    """
     lines = [[j.strip() for j in i.strip().split()] for i in f.readlines()]
 
 
@@ -47,10 +55,16 @@ for i in lines:
         continue
     elif i[0] == "var":
         continue
-    elif i[0][-1] == ":" and len(i) == 1:
+    elif i[0][-1] == ":":
         binAddr = bin(addr)[2:]
         labels[i[0][:-1]] = "0" * (8 - len(binAddr)) + binAddr
-        continue
+
+        # removing the label from the command
+        i.pop(0)
+
+        # if the label doesn't have a command on the same line continuing
+        if i == []:
+            continue
 
     commands.append(i)
     addr += 1
@@ -126,6 +140,6 @@ for sNo in range(len(commands)):
 # Writing to stdout
 #
 # Writing the machine code to the file
-with open("stdout.txt", "w") as f:
+with open("output.txt", "w") as f:
     for i in machineCode:
         f.write(i + "\n")
