@@ -2,6 +2,7 @@
 # assembler.py
 # By - Shivoy Arora
 #      Suhani Mathur
+#      Shobhit Pandey
 # Date - 20/06/2022
 #
 
@@ -70,6 +71,8 @@ for i in lines:
     commands.append(i)
     addr += 1
 
+###### index -1 is not hlt #####
+
 # Getting the variables addresses
 for i in lines:
     if i[0] == "var":
@@ -99,7 +102,7 @@ for sNo in range(len(commands)):
             ops = "mov2"
 
     # adding opcode to binLine
-    binLine = opcodes[ops]
+    binLine = opcodes[ops]      # typo of ops error
 
     # adding unused space
     stmtType = stmtTypes[ops]
@@ -111,7 +114,7 @@ for sNo in range(len(commands)):
 
             # if registers are present
             if i[0] != "$":
-                binLine += regs[i]
+                binLine += regs[i]      # registers error & flag error
 
             # immediate value is present
             else:
@@ -123,12 +126,12 @@ for sNo in range(len(commands)):
         # adding register to binLine
         binLine += regs[commands[sNo][1]]
 
-        binLine += vars[commands[sNo][2]]
+        binLine += vars[commands[sNo][2]]       # undefined variables
 
     # For jumping statements
     elif stmtType == "E":
         # adding label addr to binLine
-        binLine += labels[commands[sNo][1]]
+        binLine += labels[commands[sNo][1]]     # undefined labels
 
     # For hlt statement
     elif stmtType == "F":
