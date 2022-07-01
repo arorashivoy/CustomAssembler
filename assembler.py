@@ -11,12 +11,19 @@
 # Declaring dictionaries
 #
 # opcode of each command
+from atexit import register
+
+
 opcodes = {"add": "10000", "sub": "10001", "mov1": "10010", "mov2": "10011", "ld": "10100", "st": "10101", "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001",
            "xor": "11010", "or": "11011", "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101", "je": "01111", "hlt": "01010"}
 
 # registers binary representation
 regs = {"R0": "000", "R1": "001", "R2": "010", "R3": "011",
         "R4": "100", "R5": "101", "R6": "110", "FLAGS": "111"}
+
+opset = {"add","sub","mov","ld"}
+
+regset = {}
 
 # statement types
 stmtTypes = {"add": "A", "sub": "A", "mov1": "B", "mov2": "C", "ld": "D", "st": "D", "mul": "A", "div": "C", "rs": "B",
@@ -42,9 +49,10 @@ with open("input.txt", "r") as f:
 
         For eg:-
             for command:    "add R1 R2 R3"
-            lines is:       [["add", "R1", "R2", "R3]]
+            lines is:       [["add", "R1", "R2", "R3"]]
     """
     lines = [[j.strip() for j in i.strip().split()] for i in f.readlines()]
+
 
 
 # Managing addr
@@ -82,6 +90,33 @@ for i in lines:
     else:
         break
 
+# registers error & flag error
+# undefined variables
+# typo of ops error
+# undefined labels
+flag = 0
+
+for i in range(len(lines)):  
+    if lines[i][-1] == "hlt":
+        if i == len(lines) - 1:
+            flag = 1
+        else:
+            print("error on line ",i+1,": halt is not the last instruction")
+    elif lines[i][-1][0] == "$":
+        if int(lines[i][-1][1:]) > 255:
+            print("error on line ",i+1,": immediate value is needs more than 8 bits")
+    elif lines[i][0] not in opset:
+        print("error on line ",i+1,": invalid operation")
+    else:
+        for j in lines[i][1:]:
+            if j not in regs and j not in vars and j not in labels and j[0] != "$":
+                print("error on line ",i+1,": invalid register/immediate/label/variable")
+            if j == "FLAGS":
+                if lines[i][0] != "mov" and lines[i][-1] != "FLAGS":
+                    print("error on line ",i+1,": invalid FLAGS call")
+
+if flag == 0:
+    print("hlt instructions not found")
 
 # Converting to machine code
 #
@@ -102,7 +137,7 @@ for sNo in range(len(commands)):
             ops = "mov2"
 
     # adding opcode to binLine
-    binLine = opcodes[ops]      # typo of ops error
+    binLine = opcodes[ops]      
 
     # adding unused space
     stmtType = stmtTypes[ops]
@@ -114,7 +149,7 @@ for sNo in range(len(commands)):
 
             # if registers are present
             if i[0] != "$":
-                binLine += regs[i]      # registers error & flag error
+                binLine += regs[i]     
 
             # immediate value is present
             else:
@@ -126,12 +161,12 @@ for sNo in range(len(commands)):
         # adding register to binLine
         binLine += regs[commands[sNo][1]]
 
-        binLine += vars[commands[sNo][2]]       # undefined variables
+        binLine += vars[commands[sNo][2]]       
 
     # For jumping statements
     elif stmtType == "E":
         # adding label addr to binLine
-        binLine += labels[commands[sNo][1]]     # undefined labels
+        binLine += labels[commands[sNo][1]]     
 
     # For hlt statement
     elif stmtType == "F":
