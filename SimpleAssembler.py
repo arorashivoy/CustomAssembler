@@ -161,6 +161,10 @@ if __name__ == "__main__":
     errorGenerated = 0      # To check if no error is generated, if not then assemble the code
     for i in range(len(lines)):
         # skipping empty lines
+        if len(commands) > 256:
+            print(color.RED + color.BOLD + "Error:" + color.END,
+                  "Number of lines in code exceed the memory of the ISA")
+
         if lines[i] == []:
             continue
 
