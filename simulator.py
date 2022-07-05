@@ -163,17 +163,53 @@ class operation:
         # removing filler bits
         command = command[3:]
 
+        # Setting the program counter
+        self.regs["PC"] = int(command, 2)
+
+        # printing the object
+        print(self.regsObj)
+
     def jlt(self, command):
         # removing filler bits
         command = command[3:]
+
+        # Checking flag
+        # Setting the program counter
+        if self.regs[-3] == "1":
+            self.regs["PC"] = int(command, 2)
+        else:
+            self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def jgt(self, command):
         # removing filler bits
         command = command[3:]
 
+        # Checking flag
+        # Setting the program counter
+        if self.regs[-2] == "1":
+            self.regs["PC"] = int(command, 2)
+        else:
+            self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
+
     def je(self, command):
         # removing filler bits
         command = command[3:]
+
+        # Checking flag
+        # Setting the program counter
+        if self.regs[-1] == "1":
+            self.regs["PC"] = int(command, 2)
+        else:
+            self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def hlt(self, command):
         print("hlt:", self.regs)
