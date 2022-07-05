@@ -49,8 +49,10 @@ class color:
 
 def checkLine(line, lineNum):
     """ Check if a line of command is correct """
-    global vars, labels, regs, stmtTypes
+    global vars, labels, stmtTypes
     global flag, errorGenerated
+
+    regs = {"R0", "R1", "R2", "R3", "R4", "R5", "R6"}
 
     # Operations allowed in the assembler
     opSet = {"add", "sub", "mov", "ld", "st", "mul", "div", "rs", "ls",
@@ -75,6 +77,8 @@ def checkLine(line, lineNum):
 
         stmtType = stmtTypes[ops]
         if stmtType == "A" or stmtType == "C":
+            if ops == "mov2" and line[1] == "FLAGS" and line[2] in regs:
+                return
             for i in line[1:]:
                 if i not in regs:
                     errorGenerated = 1
@@ -87,10 +91,10 @@ def checkLine(line, lineNum):
                     errorGenerated = 1
                     print(color.RED + color.BOLD + "Error:" +
                           color.END, "Line", i+1, ", invalid register")
-                elif int(line[2][1:]) > 255:
+                elif int(line[2][1:]) > 255 or int(line[2][1:]) < 0:
                     errorGenerated = 1
                     print(color.RED + color.BOLD + "Error:" + color.END, "Line",
-                          lineNum, ", immediate value is needs more than 8 bits")
+                          lineNum, ", invalid value of immediate")
             except ValueError:
                 errorGenerated = 1
                 print(color.RED + color.BOLD + "Error:" + color.END, "Line",
@@ -149,6 +153,8 @@ if __name__ == "__main__":
 
     # Getting the variables addresses
     for i in lines:
+        if i == []:
+            continue
         if i[0] == "var":
             binAddr = bin(addr)[2:]
             vars[i[1]] = "0" * (8 - len(binAddr)) + binAddr

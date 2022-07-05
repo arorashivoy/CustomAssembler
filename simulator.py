@@ -6,6 +6,10 @@
 # Date - 30/06/2022
 #
 
+# TODO ask if we have to clear FLAGS before execution an instruction
+
+import sys
+
 MAX_REG = 65535
 
 
@@ -15,6 +19,12 @@ class registers:
     def __init__(self):
         self.regs = {"000": 0, "001": 0, "010": 0, "011": 0,
                      "100": 0, "101": 0, "110": 0, "111": "0"*16, "PC": 0}
+
+    def clearFlag(self):
+        self.regs["111"] = "0"*16
+
+    def setOverflow(self):
+        self.regs["111"] = "0"*12 + "1" + "000"
 
     def convBin8(self, num):
         """ Convert the num to 8 bit binary  number
@@ -37,12 +47,6 @@ class registers:
         """
         binNum = bin(num)[2:]
         return "0"*(16-len(binNum)) + binNum
-
-    def clearFlag(self):
-        self.regs["111"] = "0"*16
-
-    def setOverflow(self):
-        self.regs["111"] = "0"*12 + "1" + "000"
 
     def __repr__(self) -> str:
         return "{} {} {} {} {} {} {} {} {}".format(self.convBin8(self.regs["PC"]), self.convBin16(self.regs["000"]), self.convBin16(self.regs["001"]), self.convBin16(self.regs["010"]),
@@ -74,11 +78,10 @@ class operation:
             self.regs[command[3:6]]
 
         # checking for overflow
-        # TODO what to do when overflow is detected to R3
         if self.regs[reg3] > MAX_REG:
             self.regsObj.setOverflow()
 
-            self.regs[reg3] -= MAX_REG
+            self.regs[reg3] %= (MAX_REG+1)
 
         # Setting the program counter
         self.regs["PC"] += 1
@@ -179,14 +182,10 @@ class operation:
 
 ############# Main Function #############
 if __name__ == "__main__":
-    # getting input
-    #
-    # reading the file
-    with open("input.txt", "r") as f:
-        lines = [i.strip() for i in f.readlines()]
+    ######## getting input ########
+    lines = [i.strip() for i in sys.stdin.readlines()]
 
-    # Creating Objects
-    #
+    ######## Creating Objects ########
     # registers
     regs = registers()
 
