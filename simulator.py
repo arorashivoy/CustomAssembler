@@ -21,10 +21,24 @@ class registers:
                      "100": 0, "101": 0, "110": 0, "111": "0"*16, "PC": 0}
 
     def clearFlag(self):
+        """ Clear FLAGS """
         self.regs["111"] = "0"*16
 
     def setOverflow(self):
+        """ Set Overflow in FLAGS """
         self.regs["111"] = "0"*12 + "1" + "000"
+
+    def setLess(self):
+        """ Set less than in FLAGS """
+        self.regs["111"] = "0"*13 + "1" + "00"
+
+    def setGreater(self):
+        """ Set greater than in FLAGS """
+        self.regs["111"] = "0"*14 + "1" + "0"
+
+    def setEqual(self):
+        """ Set equal to in FLAGS """
+        self.regs["111"] = "0"*15 + "1"
 
     def convBin8(self, num):
         """ Convert the num to 8 bit binary  number
@@ -113,11 +127,31 @@ class operation:
         print(self.regsObj)
 
     def mov1(self, command):
-        pass
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        self.regs[command[:3]] = int(command[3:], 2)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def mov2(self, command):
         # removing filler bits
         command = command[5:]
+
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        self.regs[command[3:]] = self.regs[command[:3]]
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def ld(self, command):
         pass
@@ -129,35 +163,158 @@ class operation:
         # removing filler bits
         command = command[2:]
 
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        # Doing the operation
+        reg3 = command[6:]
+        self.regs[reg3] = self.regs[command[:3]] * \
+            self.regs[command[3:6]]
+
+        # checking for overflow
+        if self.regs[reg3] > MAX_REG:
+            self.regsObj.setOverflow()
+
+            self.regs[reg3] %= (MAX_REG+1)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
+
     def div(self, command):
         # removing filler bits
         command = command[5:]
 
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        # quotient
+        self.regs["000"] = command[:3] // command[3:]
+        # remainder
+        self.regs["001"] = command[:3] % command[3:]
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
+
     def rs(self, command):
-        pass
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        self.regs[command[:3]] = self.regs[command[:3]] >> int(command[3:], 2)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def ls(self, command):
-        pass
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        self.regs[command[:3]] = self.regs[command[:3]] << int(command[3:], 2)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def xor(self, command):
         # removing filler bits
         command = command[2:]
 
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        # Doing the operation
+        reg3 = command[6:]
+        self.regs[reg3] = self.regs[command[:3]] ^ \
+            self.regs[command[3:6]]
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
+
     def orOps(self, command):
         # removing filler bits
         command = command[2:]
+
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        # Doing the operation
+        reg3 = command[6:]
+        self.regs[reg3] = self.regs[command[:3]] | \
+            self.regs[command[3:6]]
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def andOps(self, command):
         # removing filler bits
         command = command[2:]
 
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        # Doing the operation
+        reg3 = command[6:]
+        self.regs[reg3] = self.regs[command[:3]] & \
+            self.regs[command[3:6]]
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
+
     def notOps(self, command):
         # removing filler bits
         command = command[5:]
 
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        # Doing the operation
+        num = bin(self.regs[command[:3]])[2:]
+
+        invert = ["1" if i == "0" else "0" for i in num]
+        self.regs[command[3:]] = int("".join(invert), 2)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
+
     def cmp(self, command):
         # removing filler bits
         command = command[5:]
+
+        # Setting FLAGS
+        if command[:3] == command[3:]:
+            self.regsObj.setEqual()
+        elif command[:3] > command[3:]:
+            self.regsObj.setGreater()
+        elif command[:3] < command[3:]:
+            self.regsObj.setLess()
+
+        # Setting the program counter
+        self.regs["PC"] += 1
+
+        # printing the object
+        print(self.regsObj)
 
     def jmp(self, command):
         # removing filler bits
@@ -175,7 +332,7 @@ class operation:
 
         # Checking flag
         # Setting the program counter
-        if self.regs[-3] == "1":
+        if self.regs["111"][-3] == "1":
             self.regs["PC"] = int(command, 2)
         else:
             self.regs["PC"] += 1
@@ -189,7 +346,7 @@ class operation:
 
         # Checking flag
         # Setting the program counter
-        if self.regs[-2] == "1":
+        if self.regs["111"][-2] == "1":
             self.regs["PC"] = int(command, 2)
         else:
             self.regs["PC"] += 1
@@ -203,7 +360,7 @@ class operation:
 
         # Checking flag
         # Setting the program counter
-        if self.regs[-1] == "1":
+        if self.regs["111"][-1] == "1":
             self.regs["PC"] = int(command, 2)
         else:
             self.regs["PC"] += 1
