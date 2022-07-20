@@ -1,5 +1,5 @@
 #
-# assembler.py
+# simulator.py
 # By - Shivoy Arora
 #      Suhani Mathur
 #      Shobhit Pandey
@@ -11,6 +11,9 @@
 import sys
 
 MAX_REG = 65535
+
+
+memAddress = dict()
 
 
 class registers:
@@ -97,11 +100,11 @@ class operation:
 
             self.regs[reg3] %= (MAX_REG+1)
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def sub(self, command):
         # removing filler bits
@@ -120,11 +123,11 @@ class operation:
             self.regs[reg3] = 0
             self.regsObj.setOverflow()
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def mov1(self, command):
         # Clearing the flag
@@ -132,11 +135,11 @@ class operation:
 
         self.regs[command[:3]] = int(command[3:], 2)
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def mov2(self, command):
         # removing filler bits
@@ -147,17 +150,39 @@ class operation:
 
         self.regs[command[3:]] = self.regs[command[:3]]
 
+        # printing the object
+        print(self.regsObj)
+
         # Setting the program counter
         self.regs["PC"] += 1
+
+    def ld(self, command):
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        if int(command[3:], 2) in memAddress:
+            self.regs[command[:3]] = memAddress[int(command[3:], 2)]
+        else:
+            self.regs[command[:3]] = 0
+            memAddress[int(command[3:], 2)] = 0
 
         # printing the object
         print(self.regsObj)
 
-    def ld(self, command):
-        pass
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def st(self, command):
-        pass
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
+        memAddress[int(command[3:], 2)] = self.regs[command[:3]]
+
+        # printing the object
+        print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def mul(self, command):
         # removing filler bits
@@ -177,11 +202,11 @@ class operation:
 
             self.regs[reg3] %= (MAX_REG+1)
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def div(self, command):
         # removing filler bits
@@ -195,11 +220,11 @@ class operation:
         # remainder
         self.regs["001"] = command[:3] % command[3:]
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def rs(self, command):
         # Clearing the flag
@@ -207,11 +232,11 @@ class operation:
 
         self.regs[command[:3]] = self.regs[command[:3]] >> int(command[3:], 2)
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def ls(self, command):
         # Clearing the flag
@@ -219,11 +244,11 @@ class operation:
 
         self.regs[command[:3]] = self.regs[command[:3]] << int(command[3:], 2)
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def xor(self, command):
         # removing filler bits
@@ -237,11 +262,11 @@ class operation:
         self.regs[reg3] = self.regs[command[:3]] ^ \
             self.regs[command[3:6]]
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def orOps(self, command):
         # removing filler bits
@@ -255,11 +280,11 @@ class operation:
         self.regs[reg3] = self.regs[command[:3]] | \
             self.regs[command[3:6]]
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def andOps(self, command):
         # removing filler bits
@@ -273,11 +298,11 @@ class operation:
         self.regs[reg3] = self.regs[command[:3]] & \
             self.regs[command[3:6]]
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def notOps(self, command):
         # removing filler bits
@@ -292,11 +317,11 @@ class operation:
         invert = ["1" if i == "0" else "0" for i in num]
         self.regs[command[3:]] = int("".join(invert), 2)
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def cmp(self, command):
         # removing filler bits
@@ -310,25 +335,28 @@ class operation:
         elif command[:3] < command[3:]:
             self.regsObj.setLess()
 
-        # Setting the program counter
-        self.regs["PC"] += 1
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] += 1
 
     def jmp(self, command):
         # removing filler bits
         command = command[3:]
 
-        # Setting the program counter
-        self.regs["PC"] = int(command, 2)
-
         # printing the object
         print(self.regsObj)
+
+        # Setting the program counter
+        self.regs["PC"] = int(command, 2)
 
     def jlt(self, command):
         # removing filler bits
         command = command[3:]
+
+        # printing the object
+        print(self.regsObj)
 
         # Checking flag
         # Setting the program counter
@@ -337,12 +365,12 @@ class operation:
         else:
             self.regs["PC"] += 1
 
-        # printing the object
-        print(self.regsObj)
-
     def jgt(self, command):
         # removing filler bits
         command = command[3:]
+
+        # printing the object
+        print(self.regsObj)
 
         # Checking flag
         # Setting the program counter
@@ -351,12 +379,12 @@ class operation:
         else:
             self.regs["PC"] += 1
 
-        # printing the object
-        print(self.regsObj)
-
     def je(self, command):
         # removing filler bits
         command = command[3:]
+
+        # printing the object
+        print(self.regsObj)
 
         # Checking flag
         # Setting the program counter
@@ -365,11 +393,21 @@ class operation:
         else:
             self.regs["PC"] += 1
 
+    def hlt(self, command):
+        global lines
+
         # printing the object
         print(self.regsObj)
 
-    def hlt(self, command):
-        print("hlt:", self.regs)
+        for i in range(256):
+            if i < len(lines):
+                print(lines[i])
+
+            elif i in memAddress:
+                binNum = bin(memAddress[i])[2:]
+                print("0" * (16 - len(binNum)) + binNum)
+            else:
+                print("0" * 16)
         exit(0)
 
 
