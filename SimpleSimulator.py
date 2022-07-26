@@ -6,8 +6,6 @@
 # Date - 30/06/2022
 #
 
-# TODO ask if we have to clear FLAGS before execution an instruction
-
 import sys
 
 MAX_REG = 65535
@@ -145,10 +143,13 @@ class operation:
         # removing filler bits
         command = command[5:]
 
+        if command[:3] != "111":
+            self.regs[command[3:]] = self.regs[command[:3]]
+        else:
+            self.regs[command[3:]] = int(self.regs[command[:3]], 2)
+
         # Clearing the flag
         self.regsObj.clearFlag()
-
-        self.regs[command[3:]] = self.regs[command[:3]]
 
         # printing the object
         print(self.regsObj)
@@ -216,9 +217,9 @@ class operation:
         self.regsObj.clearFlag()
 
         # quotient
-        self.regs["000"] = command[:3] // command[3:]
+        self.regs["000"] = self.regs[command[:3]] // self.regs[command[3:]]
         # remainder
-        self.regs["001"] = command[:3] % command[3:]
+        self.regs["001"] = self.regs[command[:3]] % self.regs[command[3:]]
 
         # printing the object
         print(self.regsObj)
@@ -312,9 +313,10 @@ class operation:
         self.regsObj.clearFlag()
 
         # Doing the operation
-        num = bin(self.regs[command[:3]])[2:]
+        num = self.regsObj.convBin16(self.regs[command[:3]])
 
         invert = ["1" if i == "0" else "0" for i in num]
+        print(invert)
         self.regs[command[3:]] = int("".join(invert), 2)
 
         # printing the object
@@ -328,11 +330,11 @@ class operation:
         command = command[5:]
 
         # Setting FLAGS
-        if command[:3] == command[3:]:
+        if self.regs[command[:3]] == self.regs[command[3:]]:
             self.regsObj.setEqual()
-        elif command[:3] > command[3:]:
+        elif self.regs[command[:3]] > self.regs[command[3:]]:
             self.regsObj.setGreater()
-        elif command[:3] < command[3:]:
+        elif self.regs[command[:3]] < self.regs[command[3:]]:
             self.regsObj.setLess()
 
         # printing the object
@@ -345,6 +347,9 @@ class operation:
         # removing filler bits
         command = command[3:]
 
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
         # printing the object
         print(self.regsObj)
 
@@ -355,12 +360,17 @@ class operation:
         # removing filler bits
         command = command[3:]
 
+        FLAGS = self.regs["111"]
+
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
         # printing the object
         print(self.regsObj)
 
         # Checking flag
         # Setting the program counter
-        if self.regs["111"][-3] == "1":
+        if FLAGS[-3] == "1":
             self.regs["PC"] = int(command, 2)
         else:
             self.regs["PC"] += 1
@@ -369,12 +379,17 @@ class operation:
         # removing filler bits
         command = command[3:]
 
+        FLAGS = self.regs["111"]
+
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
         # printing the object
         print(self.regsObj)
 
         # Checking flag
         # Setting the program counter
-        if self.regs["111"][-2] == "1":
+        if FLAGS[-2] == "1":
             self.regs["PC"] = int(command, 2)
         else:
             self.regs["PC"] += 1
@@ -383,18 +398,26 @@ class operation:
         # removing filler bits
         command = command[3:]
 
+        FLAGS = self.regs["111"]
+
+        # Clearing the flag
+        self.regsObj.clearFlag()
+
         # printing the object
         print(self.regsObj)
 
         # Checking flag
         # Setting the program counter
-        if self.regs["111"][-1] == "1":
+        if FLAGS[-1] == "1":
             self.regs["PC"] = int(command, 2)
         else:
             self.regs["PC"] += 1
 
     def hlt(self, command):
         global lines
+
+        # Clearing the flag
+        self.regsObj.clearFlag()
 
         # printing the object
         print(self.regsObj)
@@ -415,6 +438,9 @@ class operation:
 if __name__ == "__main__":
     ######## getting input ########
     lines = [i.strip() for i in sys.stdin.readlines()]
+
+    while lines[-1] == "":
+        lines.pop()
 
     ######## Creating Objects ########
     # registers
