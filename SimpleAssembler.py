@@ -185,9 +185,9 @@ if __name__ == "__main__":
         if lines[i][0] == "var":
             continue
         elif lines[i][-1] == ":":
-            checkLine(lines[i][1:], i)
+            checkLine(lines[i][1:], i+1)
         else:
-            checkLine(lines[i], i)
+            checkLine(lines[i], i+1)
 
     # if hlt statement is not present
     if flag == 0:
