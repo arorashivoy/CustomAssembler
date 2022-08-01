@@ -1,5 +1,5 @@
 #
-# assembler.py
+# Q3_Assembler.py
 # By - Shivoy Arora
 #      Suhani Mathur
 #      Shobhit Pandey
@@ -53,8 +53,7 @@ def floatBin(number):
         Args:
             number: floating point number to be converted
         Returns:
-            exp: exponent of the representation in int
-            mantissa: mantissa of the number in string
+            num: string of the floating point representation
     """
     whole, dec = str(number).split(".")
 
@@ -77,7 +76,10 @@ def floatBin(number):
     binRepr = "".join(binRepr.split("."))
     mantissa = binRepr[1:6]
 
-    return exp, mantissa
+    num = "0" * (3 - len(bin(exp)[2:])) + bin(exp)[2:]
+    num += mantissa + (5 - len(mantissa)) * "0"
+
+    return num
 
 
 def checkLine(line, lineNum):
@@ -124,7 +126,7 @@ def checkLine(line, lineNum):
                     errorGenerated = 1
                     print(color.RED + color.BOLD + "Error:" +
                           color.END, "Line", i+1, ", invalid register")
-                elif ops == "movf" and (float(line[2][1:]) > 252 or float(line[2][1:]) < 0):
+                elif ops == "movf" and (float(line[2][1:]) > 252 or float(line[2][1:]) < 1):
                     errorGenerated = 1
                     print(color.RED + color.BOLD + "Error:" + color.END, "Line",
                           lineNum, ", invalid value of floating point immediate")
@@ -272,9 +274,7 @@ if __name__ == "__main__":
                     #
                     # For floating point
                     elif ops == "movf" and i[0] == "$":
-                        exp, mantissa = floatBin(i[1:])
-                        binLine += "0" * (3 - len(bin(exp)[2:])) + bin(exp)[2:]
-                        binLine += mantissa + (5 - len(mantissa)) * "0"
+                        binLine += floatBin(i[1:])
 
                     else:
                         binRepr = bin(int(i[1:]))[2:]
