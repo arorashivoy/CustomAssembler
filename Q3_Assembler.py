@@ -93,68 +93,74 @@ def checkLine(line, lineNum):
     opSet = {"add", "sub", "mov", "ld", "st", "mul", "div", "rs", "ls", "xor", "or",
              "and", "not", "cmp", "jmp", "jlt", "jgt", "je", "hlt", "addf", "subf", "movf"}
 
-    if line == ["hlt"]:
-        flag = 1
-    elif line[0] not in opSet:
-        errorGenerated = 1
-        print(color.RED + color.BOLD + "Error:" +
-              color.END, "Line", lineNum, ", invalid operation")
+    try:
+        if line == ["hlt"]:
+            flag = 1
+        elif line[0] not in opSet:
+            errorGenerated = 1
+            print(color.RED + color.BOLD + "Error:" +
+                  color.END, "Line", lineNum, ", invalid operation")
 
-    else:
-        ops = line[0]
+        else:
+            ops = line[0]
 
-        # converting ops to incorporate two types of mov command
-        if ops == "mov":
-            if line[2][0] == "$":
-                ops = "mov1"
-            else:
-                ops = "mov2"
+            # converting ops to incorporate two types of mov command
+            if ops == "mov":
+                if line[2][0] == "$":
+                    ops = "mov1"
+                else:
+                    ops = "mov2"
 
-        stmtType = stmtTypes[ops]
-        if stmtType == "A" or stmtType == "C":
-            if ops == "mov2" and line[1] == "FLAGS" and line[2] in regs:
-                return
-            for i in line[1:]:
-                if i not in regs:
+            stmtType = stmtTypes[ops]
+            if stmtType == "A" or stmtType == "C":
+                if ops == "mov2" and line[1] == "FLAGS" and line[2] in regs:
+                    return
+                for i in line[1:]:
+                    if i not in regs:
+                        errorGenerated = 1
+                        print(color.RED + color.BOLD + "Error:" +
+                              color.END, "Line", lineNum, ", invalid register")
+
+            elif stmtType == "B":
+                try:
+                    if line[1] not in regs:
+                        errorGenerated = 1
+                        print(color.RED + color.BOLD + "Error:" +
+                              color.END, "Line", i+1, ", invalid register")
+                    elif ops == "movf" and (float(line[2][1:]) > 252 or float(line[2][1:]) < 1):
+                        errorGenerated = 1
+                        print(color.RED + color.BOLD + "Error:" + color.END, "Line",
+                              lineNum, ", invalid value of floating point immediate")
+                    elif ops == "movf" and line[2][1:].find(".") == -1:
+                        errorGenerated = 1
+                        print(color.RED + color.BOLD + "Error:" + color.END, "Line",
+                              lineNum, ", invalid floating point immediate (No floating point found)")
+                    elif ops != "movf" and (int(line[2][1:]) > 255 or int(line[2][1:]) < 0):
+                        errorGenerated = 1
+                        print(color.RED + color.BOLD + "Error:" + color.END, "Line",
+                              lineNum, ", invalid value of immediate")
+                except ValueError as e:
                     errorGenerated = 1
-                    print(color.RED + color.BOLD + "Error:" +
-                          color.END, "Line", lineNum, ", invalid register")
-
-        elif stmtType == "B":
-            try:
+                    print(color.RED + color.BOLD + "Error:" + color.END, "Line",
+                          lineNum, ", invalid immediate value")
+            elif stmtType == "D":
                 if line[1] not in regs:
                     errorGenerated = 1
                     print(color.RED + color.BOLD + "Error:" +
-                          color.END, "Line", i+1, ", invalid register")
-                elif ops == "movf" and (float(line[2][1:]) > 252 or float(line[2][1:]) < 1):
+                          color.END, "Line", lineNum, ", invalid register")
+                elif line[2] not in vars:
                     errorGenerated = 1
-                    print(color.RED + color.BOLD + "Error:" + color.END, "Line",
-                          lineNum, ", invalid value of floating point immediate")
-                elif ops == "movf" and line[2][1:].find(".") == -1:
-                    print(color.RED + color.BOLD + "Error:" + color.END, "Line",
-                          lineNum, ", invalid floating point immediate (No floating point found)")
-                elif ops != "movf" and (int(line[2][1:]) > 255 or int(line[2][1:]) < 0):
+                    print(color.RED + color.BOLD + "Error:" +
+                          color.END, "Line", lineNum, ", variable not found")
+            elif stmtType == "E":
+                if line[1] not in labels:
                     errorGenerated = 1
-                    print(color.RED + color.BOLD + "Error:" + color.END, "Line",
-                          lineNum, ", invalid value of immediate")
-            except ValueError as e:
-                errorGenerated = 1
-                print(color.RED + color.BOLD + "Error:" + color.END, "Line",
-                      lineNum, ", invalid immediate value")
-        elif stmtType == "D":
-            if line[1] not in regs:
-                errorGenerated = 1
-                print(color.RED + color.BOLD + "Error:" +
-                      color.END, "Line", lineNum, ", invalid register")
-            elif line[2] not in vars:
-                errorGenerated = 1
-                print(color.RED + color.BOLD + "Error:" +
-                      color.END, "Line", lineNum, ", variable not found")
-        elif stmtType == "E":
-            if line[1] not in labels:
-                errorGenerated = 1
-                print(color.RED + color.BOLD + "Error:" +
-                      color.END, "Line", lineNum, ", label not found")
+                    print(color.RED + color.BOLD + "Error:" +
+                          color.END, "Line", lineNum, ", label not found")
+    except:
+        errorGenerated = 1
+        print(color.RED + color.BOLD + "Error:" +
+              color.END, "Line", lineNum, ", unexpected error found")
 
 
 ################# Main Function #################
