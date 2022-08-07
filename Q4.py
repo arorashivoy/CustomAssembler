@@ -480,6 +480,10 @@ if __name__ == "__main__":
 
     plt.xticks(xPC)
     # plt.yticks([i for i in range(257)])
+    if len(y) != 0:
+        plt.yticks([i for i in range(max(max(y), max(yPC)) + 1)])
+    else:
+        plt.yticks([i for i in range(max(yPC) + 1)])
     plt.yticks([i for i in range(max(max(y), max(yPC)) + 1)])
 
     plt.xlabel("Cycle Number")
