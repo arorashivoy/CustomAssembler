@@ -316,7 +316,6 @@ class operation:
         num = self.regsObj.convBin16(self.regs[command[:3]])
 
         invert = ["1" if i == "0" else "0" for i in num]
-        print(invert)
         self.regs[command[3:]] = int("".join(invert), 2)
 
         # printing the object

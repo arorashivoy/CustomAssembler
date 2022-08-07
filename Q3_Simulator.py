@@ -167,13 +167,14 @@ class operation:
         self.regsObj.clearFlag()
 
         reg3 = command[6:]
-        self.regs[reg3] = self.floatInt(self.binFloat(bin(self.regs[command[:3]])[
-                                        2:]) - self.binFloat(bin(self.regs[command[3:6]])[2:]))
 
         # checking for overflow
-        if self.regs[reg3] < 0:
+        if self.binFloat(bin(self.regs[command[:3]])[2:]) - self.binFloat(bin(self.regs[command[3:6]])[2:]) < 1:
             self.regs[reg3] = 0
             self.regsObj.setOverflow()
+        else:
+            self.regs[reg3] = self.floatInt(self.binFloat(bin(self.regs[command[:3]])[
+                2:]) - self.binFloat(bin(self.regs[command[3:6]])[2:]))
 
         # printing the object
         print(self.regsObj)
@@ -429,7 +430,6 @@ class operation:
         num = self.regsObj.convBin16(self.regs[command[:3]])
 
         invert = ["1" if i == "0" else "0" for i in num]
-        print(invert)
         self.regs[command[3:]] = int("".join(invert), 2)
 
         # printing the object
